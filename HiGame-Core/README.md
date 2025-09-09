@@ -183,12 +183,17 @@ class MyCustomService : HiGameCustomService {
 
 SDK 会自动处理服务的注册、发现和生命周期管理，开发者只需专注业务逻辑实现！
 
-## 默认服务实现
+## 服务实现说明
 
-SDK 提供了所有功能模块的默认实现，位于 `example` 包下：
-- `DefaultLoginService` - 默认登录服务
-- `DefaultPayService` - 默认支付服务  
-- `DefaultShareService` - 默认分享服务
-- `DefaultUserCenterService` - 默认用户中心服务
+当前版本（v0.0.1）提供了完整的服务接口定义和架构框架，但尚未包含具体的服务实现。开发者需要根据实际需求实现相应的服务：
 
-这些默认实现提供基础功能和模拟数据，方便开发测试。在生产环境中，可以通过 `@AutoService` 注解提供自定义实现来替换默认服务。
+### 需要实现的服务接口
+- `HiGameLoginService` - 登录服务接口
+- `HiGamePayService` - 支付服务接口  
+- `HiGameShareService` - 分享服务接口
+- `HiGameUserCenterService` - 用户中心服务接口
+
+### 实现方式
+使用 `@AutoService` 注解实现具体的服务类，SDK 会自动发现和注册这些服务实现。
+
+**注意**：当前版本专注于核心架构搭建，后续版本将提供默认的服务实现示例。
