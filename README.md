@@ -6,9 +6,9 @@ HiGame Android SDK 是一个企业级的模块化游戏和应用开发框架，�
 
 ## 版本信息
 
-**当前版本**: v0.0.1  
+**当前版本**: v0.0.2  
 **发布日期**: 2024年12月  
-**版本状态**: 基础架构搭建完成
+**版本状态**: 基础架构 + UI库实现完成
 
 ## 架构设计
 
@@ -46,7 +46,7 @@ HiGame Android SDK
 | **OkHttp/Retrofit** | 4.12.0/2.11.0 | 网络请求 |
 | **Gson** | 2.11.0 | JSON解析 |
 
-## v0.0.1 版本实现内容
+## v0.0.2 版本实现内容
 
 ### ✅ 已完成功能
 
@@ -59,12 +59,15 @@ HiGame Android SDK
 - **工具类库**: 日志系统、工具类、错误处理
 
 #### 2. HiGame-UI 组件库
-- **基础UI组件**: 使用Jetpack Compose构建的现代化UI组件
-- **主题系统**: 可定制的颜色、字体、形状主题
-- **登录组件**: HiGameLoginView - 支持多种登录方式的统一界面
+- **基础UI组件**: HiGameButton、HiGameInputField、HiGameDialog等通用组件
+- **布局组件**: HiGameBottomSheet、HiGameLoadingView等容器组件
+- **主题系统**: HiGameMaterialAdapter - Material3主题适配器
+- **登录组件**: HiGameLoginView - 支持微信登录、游客登录的统一界面
 - **分享组件**: HiGameShareView - 多平台分享功能界面
 - **用户中心组件**: HiGameUserCenterView - 个人信息管理界面
-- **响应式设计**: 支持不同屏幕尺寸和方向的自动适配
+- **透明Activity**: HiGameTransparentActivity - 无感知的UI展示容器
+- **屏幕规范**: ScreenSpec - 统一的屏幕展示规范
+- **预览支持**: 各组件的Compose预览功能
 
 #### 3. Demo应用
 - **基础框架**: 使用Jetpack Compose的示例应用

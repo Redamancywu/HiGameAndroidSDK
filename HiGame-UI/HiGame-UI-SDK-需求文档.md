@@ -115,78 +115,253 @@ HiGame UI 组件库是一个**通用的、模块化的 Android UI 解决方案**
 ## 1. 公共 UI 基础模块（HiGameCommonUI）
 
 ### 1.1 基础组件库
-```java
-// 通用 UI 组件
-public class HiGameButton extends View { ... }
-public class HiGameInputField extends View { ... }
-public class HiGameDialog extends Dialog { ... }
-public class HiGameBottomSheet extends BottomSheetDialog { ... }
-public class HiGameLoadingView extends View { ... }
-public class HiGameToast { ... }
-```
+```kotlin
+// 通用 UI 组件（Kotlin + Compose，建议放在 hi-game-ui 的公共 ui 包）
+// 包名示例：com.horizon.higame.ui.components
 
-### 1.2 主题系统
-```java
-public class HiGameTheme {
-    // 颜色主题
-    public static class Colors {
-        public int primary;
-        public int secondary;
-        public int accent;
-        public int background;
-        public int surface;
-        public int error;
-        public int onPrimary;
-        public int onSecondary;
-        // ...
-    }
-    
-    // 字体主题
-    public static class Typography {
-        public int h1, h2, h3, h4, h5, h6;
-        public int body1, body2;
-        public int caption, overline;
-        public String fontFamily;
-    }
-    
-    // 形状主题
-    public static class Shapes {
-        public int smallCornerRadius;
-        public int mediumCornerRadius;
-        public int largeCornerRadius;
+@Composable
+fun HiGameButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    onClick: () -> Unit
+) {
+    // 可用 Material3 Button 或自定义样式，颜色/圆角从 HiGameTheme 映射
+    androidx.compose.material3.Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+    ) {
+        if (leadingIcon != null) leadingIcon()
+        androidx.compose.material3.Text(text)
+        if (trailingIcon != null) trailingIcon()
     }
 }
-```
 
-### 1.3 动画系统
-```java
-public class HiGameAnimations {
-    public static final int DURATION_SHORT = 150;
-    public static final int DURATION_MEDIUM = 300;
-    public static final int DURATION_LONG = 500;
-    
-    public static Animation fadeIn(int duration);
-    public static Animation slideUp(int duration);
-    public static Animation scaleIn(int duration);
-    // ...
+@Composable
+fun HiGameInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    isPassword: Boolean = false,
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Done,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onImeAction: (() -> Unit)? = null
+) {
+    val visual = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+    androidx.compose.material3.TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        enabled = enabled,
+        placeholder = { if (placeholder != null) androidx.compose.material3.Text(placeholder) },
+        leadingIcon = leadingIcon,
+        visualTransformation = visual,
+        keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
+        keyboardActions = KeyboardActions(
+            onDone = { onImeAction?.invoke() },
+            onGo = { onImeAction?.invoke() },
+            onSearch = { onImeAction?.invoke() }
+        )
+    )
+}
+
+@Composable
+fun HiGameDialog(
+    onDismissRequest: () -> Unit,
+    title: String? = null,
+    confirmText: String = "OK",
+    onConfirm: (() -> Unit)? = null,
+    dismissText: String? = null,
+    onDismissButton: (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { if (title != null) androidx.compose.material3.Text(title) },
+        text = content,
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = { onConfirm?.invoke(); onDismissRequest() }) {
+                androidx.compose.material3.Text(confirmText)
+            }
+        },
+        dismissButton = {
+            if (dismissText != null) {
+                androidx.compose.material3.TextButton(onClick = { onDismissButton?.invoke(); onDismissRequest() }) {
+                    androidx.compose.material3.Text(dismissText)
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HiGameBottomSheet(
+    show: Boolean,
+    onDismissRequest: () -> Unit,
+    dragHandle: @Composable (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    if (!show) return
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = state,
+        dragHandle = dragHandle
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun HiGameLoadingView(
+    modifier: Modifier = Modifier,
+    text: String? = null
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        androidx.compose.material3.CircularProgressIndicator()
+        if (text != null) {
+            Spacer(Modifier.height(8.dp))
+            androidx.compose.material3.Text(text)
+        }
+    }
+}
+
+// Toast 门面：提供可从 Java 调用的简易入口（在 UI 模块内实现）
+object HiGameToast {
+    @JvmStatic
+    fun show(context: Context, message: String, duration: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(context.applicationContext, message, duration).show()
+    }
 }
 ```
 
-### 1.4 状态管理接口
-```java
-public interface HiGameUIState<T> {
-    void onLoading();
-    void onSuccess(T data);
-    void onError(String message);
-    void onEmpty();
-}
+说明与建议：
+- 这些组件为无状态 Composable，通过参数驱动；样式（颜色/圆角/字号）从 core 的 HiGameTheme 适配器映射。
+- Dialog/BottomSheet 作为 Composable 版本实现，不再继承 Dialog/BottomSheetDialog；兼容场景可提供 Java 门面方法：HiGameDialog.show(Activity, config) 内部启动透明 Activity + Compose。
+- HiGameToast 保留轻量的 Java 静态方法，方便引擎侧直接调用；其余 UI 组件仍建议通过 show(Activity, style, config) 的 Java 门面以 Activity 承载。
 
-public abstract class HiGameBaseViewModel {
-    protected HiGameEventBus eventBus;
-    protected HiGameConfigProvider configProvider;
-    // ...
+### 1.2 主题系统（Kotlin，建议放在 hi-game-core）
+```kotlin
+package com.horizon.higame.core.ui
+
+import androidx.annotation.ColorInt
+
+data class HiGameTheme(
+    val colors: Colors = Colors(),
+    val typography: Typography = Typography(),
+    val shapes: Shapes = Shapes()
+) {
+    data class Colors(
+        @ColorInt val primary: Int = 0xFF4CAF50.toInt(),
+        @ColorInt val secondary: Int = 0xFF03A9F4.toInt(),
+        @ColorInt val accent: Int = 0xFFFFC107.toInt(),
+        @ColorInt val background: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val surface: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val error: Int = 0xFFEF5350.toInt(),
+        @ColorInt val onPrimary: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val onSecondary: Int = 0xFF000000.toInt()
+        // 可按需扩展 onBackground/onSurface 等
+    )
+
+    data class Typography(
+        val h1Sp: Int = 28,
+        val h2Sp: Int = 24,
+        val h3Sp: Int = 20,
+        val h4Sp: Int = 18,
+        val h5Sp: Int = 16,
+        val h6Sp: Int = 14,
+        val body1Sp: Int = 16,
+        val body2Sp: Int = 14,
+        val captionSp: Int = 12,
+        val overlineSp: Int = 10,
+        val fontFamily: String = "sans-serif"
+    )
+
+    data class Shapes(
+        val smallCornerDp: Int = 6,
+        val mediumCornerDp: Int = 10,
+        val largeCornerDp: Int = 16
+    )
 }
 ```
+
+说明：
+- 颜色、字号、圆角均为“配置值”，Compose UI 层再转换为 dp/sp
+- UI 模块可提供从 HiGameTheme 映射到 MaterialTheme 的适配器
+
+### 1.3 动画系统（Kotlin，建议放在 hi-game-core）
+（说明）本章节的主题系统、动画系统、UI通用状态接口已统一在 HiGame-Core 中定义，UI 模块仅依赖并做 Compose 适配。
+```kotlin
+package com.horizon.higame.core.ui
+
+object HiGameAnimations {
+    const val DURATION_SHORT = 150
+    const val DURATION_MEDIUM = 300
+    const val DURATION_LONG = 500
+
+    // 描述型 API：由 UI 层（Compose）解释为具体动画
+    enum class Type { FadeIn, SlideUp, ScaleIn }
+
+    data class Spec(
+        val type: Type,
+        val durationMs: Int = DURATION_MEDIUM,
+        val delayMs: Int = 0
+    )
+
+    fun fadeIn(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.FadeIn, durationMs, delayMs)
+
+    fun slideUp(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.SlideUp, durationMs, delayMs)
+
+    fun scaleIn(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.ScaleIn, durationMs, delayMs)
+}
+```
+
+说明：
+- 不直接返回 Android Animation/Animator，避免与 Compose 冲突
+- UI 层根据 Spec 映射到 animate*AsState/AnimatedVisibility/EnterTransition
+
+### 1.4 状态管理接口（Kotlin，建议放在 hi-game-core）
+```kotlin
+package com.horizon.higame.core.ui
+
+// 轻量状态协议，供 UI 和外部引擎理解
+interface HiGameUIState<T> {
+    fun onLoading()
+    fun onSuccess(data: T)
+    fun onError(message: String)
+    fun onEmpty()
+}
+
+// 仅定义契约，不强依赖 AndroidX ViewModel；UI 模块可选择继承 Android ViewModel
+abstract class HiGameBaseViewModel(
+    protected val eventBus: Any?,            // 可替换为具体的 HiGameEventBus
+    protected val configProvider: Any?       // 可替换为具体的 HiGameConfigProvider
+) {
+    open fun onCreate() {}
+    open fun onResume() {}
+    open fun onPause() {}
+    open fun onDestroy() {}
+}
+```
+
+放置建议：
+- 以上三部分均放在 hi-game-core（如 com.horizon.higame.core.ui 包）；
+- 三个 UI AAR（login/share/usercenter）仅依赖这些定义，达到“模块化、可拔插、统一风格与动画”的目标；
+- 若需对外 Java 适配，可在 UI AAR 提供 Java 友好的包装类（简单映射到这些 Kotlin data class/接口）。
 
 ---
 

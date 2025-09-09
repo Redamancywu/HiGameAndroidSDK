@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "HiGameSDK"
 include(":app")
 include(":HiGame-Core")
+include(":HiGame-UI")
