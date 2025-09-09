@@ -124,61 +124,30 @@ class HiGameStateManager private constructor() {
         HiGameLogger.d("App lifecycle state updated: $state")
     }
     
-    /**
-     * 获取初始化状态
-     */
-    fun getInitializationState(): StateFlow<Boolean> {
-        return isInitialized
-    }
+    // Java 兼容：提供不与属性 getter 冲突的访问方法
+    @JvmName("stateInitialization")
+    fun stateInitialization(): StateFlow<Boolean> = isInitialized
     
-    /**
-     * 获取登录状态
-     */
-    fun getLoginState(): StateFlow<Boolean> {
-        return isLoggedIn
-    }
+    @JvmName("stateLogin")
+    fun stateLogin(): StateFlow<Boolean> = isLoggedIn
     
-    /**
-     * 获取当前用户
-     */
-    fun getCurrentUser(): StateFlow<HiGameUser?> {
-        return currentUser
-    }
+    @JvmName("stateCurrentUser")
+    fun stateCurrentUser(): StateFlow<HiGameUser?> = currentUser
     
-    /**
-     * 获取网络状态
-     */
-    fun getNetworkState(): StateFlow<Boolean> {
-        return isNetworkAvailable
-    }
+    @JvmName("stateNetwork")
+    fun stateNetwork(): StateFlow<Boolean> = isNetworkAvailable
     
-    /**
-     * 获取支付状态
-     */
-    fun getPaymentState(): StateFlow<PaymentState> {
-        return paymentState
-    }
+    @JvmName("statePayment")
+    fun statePayment(): StateFlow<PaymentState> = paymentState
     
-    /**
-     * 获取分享状态
-     */
-    fun getShareState(): StateFlow<ShareState> {
-        return shareState
-    }
+    @JvmName("stateShare")
+    fun stateShare(): StateFlow<ShareState> = shareState
     
-    /**
-     * 获取用户中心状态
-     */
-    fun getUserCenterState(): StateFlow<UserCenterState> {
-        return userCenterState
-    }
+    @JvmName("stateUserCenter")
+    fun stateUserCenter(): StateFlow<UserCenterState> = userCenterState
     
-    /**
-     * 获取应用生命周期状态
-     */
-    fun getAppLifecycleState(): StateFlow<AppLifecycleState> {
-        return appLifecycleState
-    }
+    @JvmName("stateAppLifecycle")
+    fun stateAppLifecycle(): StateFlow<AppLifecycleState> = appLifecycleState
     
     /**
      * 设置自定义状态

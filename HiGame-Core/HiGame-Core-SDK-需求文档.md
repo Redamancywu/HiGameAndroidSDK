@@ -1,5 +1,101 @@
 # HiGame-Core SDK 需求功能文档
 
+## 新增：UI 基础契约（供 UI AAR 复用）
+为实现“模块化、可拔插、统一风格”的 UI 体系，Core 提供三类基础定义，UI AAR（login/share/usercenter）仅依赖这些契约并在 Compose 层做适配。
+- 包名建议：`com.horizon.higame.core.ui`
+- 组成：主题系统、动画系统、UI 通用状态接口
+- 设计目标：对外保持 Kotlin/Java 皆可使用；不绑定 Compose/AndroidX ViewModel；可由 UI 层映射到 Material3/动画
+
+### 1) 主题系统（Kotlin data class）
+```kotlin
+package com.horizon.higame.core.ui
+
+import androidx.annotation.ColorInt
+
+data class HiGameTheme(
+    val colors: Colors = Colors(),
+    val typography: Typography = Typography(),
+    val shapes: Shapes = Shapes()
+) {
+    data class Colors(
+        @ColorInt val primary: Int = 0xFF4CAF50.toInt(),
+        @ColorInt val secondary: Int = 0xFF03A9F4.toInt(),
+        @ColorInt val accent: Int = 0xFFFFC107.toInt(),
+        @ColorInt val background: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val surface: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val error: Int = 0xFFEF5350.toInt(),
+        @ColorInt val onPrimary: Int = 0xFFFFFFFF.toInt(),
+        @ColorInt val onSecondary: Int = 0xFF000000.toInt()
+    )
+    data class Typography(
+        val h1Sp: Int = 28, val h2Sp: Int = 24, val h3Sp: Int = 20,
+        val h4Sp: Int = 18, val h5Sp: Int = 16, val h6Sp: Int = 14,
+        val body1Sp: Int = 16, val body2Sp: Int = 14,
+        val captionSp: Int = 12, val overlineSp: Int = 10,
+        val fontFamily: String = "sans-serif"
+    )
+    data class Shapes(
+        val smallCornerDp: Int = 6,
+        val mediumCornerDp: Int = 10,
+        val largeCornerDp: Int = 16
+    )
+}
+```
+
+### 2) 动画系统（描述型 Spec）
+```kotlin
+package com.horizon.higame.core.ui
+
+object HiGameAnimations {
+    const val DURATION_SHORT = 150
+    const val DURATION_MEDIUM = 300
+    const val DURATION_LONG = 500
+
+    enum class Type { FadeIn, SlideUp, ScaleIn }
+
+    data class Spec(
+        val type: Type,
+        val durationMs: Int = DURATION_MEDIUM,
+        val delayMs: Int = 0
+    )
+
+    fun fadeIn(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.FadeIn, durationMs, delayMs)
+    fun slideUp(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.SlideUp, durationMs, delayMs)
+    fun scaleIn(durationMs: Int = DURATION_MEDIUM, delayMs: Int = 0) =
+        Spec(Type.ScaleIn, durationMs, delayMs)
+}
+```
+
+### 3) UI 通用管理状态接口
+```kotlin
+package com.horizon.higame.core.ui
+
+interface HiGameUIState<T> {
+    fun onLoading()
+    fun onSuccess(data: T)
+    fun onError(message: String)
+    fun onEmpty()
+}
+
+// 仅定义生命周期契约；不强依赖 AndroidX ViewModel
+abstract class HiGameBaseViewModel(
+    protected val eventBus: Any? = null,         // 可替换为 HiGameEventBus
+    protected val configProvider: Any? = null    // 可替换为 HiGameConfigProvider
+) {
+    open fun onCreate() {}
+    open fun onResume() {}
+    open fun onPause() {}
+    open fun onDestroy() {}
+}
+```
+
+使用建议：
+- UI AAR 通过适配器将 HiGameTheme/HiGameAnimations 映射到 Compose Material3 与动画 API
+- 引擎项目不需要依赖 Compose，只依赖 Core 的这些轻量契约
+- 后续可在 Core 提供全局配置入口：HiGameUIConfig.setTheme(HiGameTheme) 等，供游戏侧统一设置
+
 ## 项目概述
 
 ### 产品定位

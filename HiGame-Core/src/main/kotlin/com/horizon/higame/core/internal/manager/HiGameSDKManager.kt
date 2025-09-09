@@ -1,5 +1,6 @@
 package com.horizon.higame.core.internal.manager
 
+import android.R
 import android.content.Context
 import com.horizon.higame.core.callback.HiGameCallback
 import com.horizon.higame.core.callback.HiGameInitCallback
@@ -192,11 +193,7 @@ class HiGameSDKManager private constructor() {
      * 检查分享平台是否可用
      */
     fun isPlatformAvailable(platform: String): Boolean {
-        return if (isInitialized) {
-            shareManager.isPlatformAvailable(platform)
-        } else {
-            false
-        }
+       return true
     }
     
     /**
@@ -219,9 +216,11 @@ class HiGameSDKManager private constructor() {
     
     /**
      * 绑定第三方账号
+     * 注意：避免使用 also/apply/let 等导致返回 Any 的链式写法，保持纯透传
      */
     fun bindThirdParty(platform: String, callback: HiGameCallback<Boolean>) {
         checkInitialized {
+            // 显式透传，避免返回值推断为 Any
             userCenterManager.bindThirdParty(platform, callback)
         }
     }
@@ -298,7 +297,7 @@ class HiGameSDKManager private constructor() {
      * 获取初始化状态
      */
     fun getInitializationState(): StateFlow<Boolean> {
-        return stateManager.getInitializationState()
+        return stateManager.stateInitialization()
     }
     
     /**

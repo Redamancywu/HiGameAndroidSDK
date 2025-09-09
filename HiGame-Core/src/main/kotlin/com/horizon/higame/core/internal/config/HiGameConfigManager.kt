@@ -33,7 +33,7 @@ internal object HiGameConfigManager {
             config = parseConfig(configJson)
             HiGameLogger.d(TAG, "配置初始化成功")
         } catch (e: Exception) {
-            HiGameLogger.e("配置初始化失败: ${e.message}", e)
+            HiGameLogger.e(TAG, e, "配置初始化失败: ${e.message}")
             // 使用默认配置
             config = createDefaultConfig()
         }
@@ -50,7 +50,7 @@ internal object HiGameConfigManager {
                 }
             }
         } catch (e: IOException) {
-            HiGameLogger.e("无法读取配置文件: $fileName - ${e.message}", e)
+            HiGameLogger.e(TAG, e, "无法读取配置文件: $fileName - ${e.message}")
             throw e
         }
     }
@@ -62,7 +62,7 @@ internal object HiGameConfigManager {
         return try {
             json.decodeFromString<HiGameConfig>(configJson)
         } catch (e: Exception) {
-            HiGameLogger.e("配置解析失败: ${e.message}", e)
+            HiGameLogger.e(TAG, e, "配置解析失败: ${e.message}")
             throw e
         }
     }
@@ -179,12 +179,12 @@ internal object HiGameConfigManager {
         
         // 验证必要字段
         if (currentConfig.globalConfig.appId.isBlank()) {
-            HiGameLogger.e(TAG, "AppId 不能为空")
+            HiGameLogger.e(TAG, null, "AppId 不能为空")
             return false
         }
         
         if (currentConfig.globalConfig.appSecret.isBlank()) {
-            HiGameLogger.e(TAG, "AppSecret 不能为空")
+            HiGameLogger.e(TAG, null, "AppSecret 不能为空")
             return false
         }
         

@@ -1,6 +1,7 @@
 package com.horizon.higame.core.utils
 
 import android.util.Log
+import timber.log.Timber
 
 /**
  * HiGame 日志工具类
@@ -22,7 +23,7 @@ internal object HiGameLogger {
      */
     fun v(message: String, tag: String = TAG) {
         if (isDebugMode) {
-            Log.v(tag, message)
+            Timber.tag(tag).v(message)
         }
     }
     
@@ -31,7 +32,7 @@ internal object HiGameLogger {
      */
     fun d(message: String, tag: String = TAG) {
         if (isDebugMode) {
-            Log.d(tag, message)
+            Timber.tag(tag).d(message)
         }
     }
     
@@ -40,7 +41,7 @@ internal object HiGameLogger {
      */
     fun i(message: String, tag: String = TAG) {
         if (isDebugMode) {
-            Log.i(tag, message)
+            Timber.tag(tag).i(message)
         }
     }
     
@@ -49,7 +50,7 @@ internal object HiGameLogger {
      */
     fun w(message: String, tag: String = TAG) {
         if (isDebugMode) {
-            Log.w(tag, message)
+            Timber.tag(tag).w(message)
         }
     }
     
@@ -59,9 +60,9 @@ internal object HiGameLogger {
     fun e(message: String, throwable: Throwable? = null, tag: String = TAG) {
         if (isDebugMode) {
             if (throwable != null) {
-                Log.e(tag, message, throwable)
+                Timber.tag(tag).e(throwable, message)
             } else {
-                Log.e(tag, message)
+                Timber.tag(tag).e(message)
             }
         }
     }
