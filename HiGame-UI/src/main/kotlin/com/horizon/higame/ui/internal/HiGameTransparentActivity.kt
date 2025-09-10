@@ -49,11 +49,15 @@ class HiGameTransparentActivity : ComponentActivity() {
                         .background(Color.Transparent)
                 ) {
                     when (screen) {
-                        is ScreenSpec.Login -> screen.Content()
-                        is ScreenSpec.Share -> screen.Content()
-                        is ScreenSpec.UserCenter -> screen.Content()
-                        else -> FinishOnDraw()
-                    }
+            is ScreenSpec.Login -> {
+                com.horizon.higame.ui.login.LoginScreen(
+                    onDismiss = { finish() }
+                )
+            }
+            is ScreenSpec.Share -> screen.Content()
+            is ScreenSpec.UserCenter -> screen.Content()
+            else -> FinishOnDraw()
+        }
                 }
             }
         }

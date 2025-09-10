@@ -72,6 +72,9 @@ dependencies {
 
     // Material3
     implementation(libs.androidx.material3)
+    
+    // Material Icons Extended - 包含完整的Material图标集
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
     // Activity Compose
     implementation(libs.androidx.activity.compose)

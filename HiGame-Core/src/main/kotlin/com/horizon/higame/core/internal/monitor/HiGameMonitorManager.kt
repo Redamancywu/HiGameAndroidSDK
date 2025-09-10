@@ -185,7 +185,7 @@ class HiGameMonitorManager private constructor() {
             stat.lastCallTime = System.currentTimeMillis()
             
             if (responseCode > 0) {
-                stat.responseCodes[responseCode] = stat.responseCodes.getOrDefault(responseCode, 0) + 1
+                stat.responseCodes[responseCode] = (stat.responseCodes[responseCode] ?: 0) + 1
             }
         }
         
@@ -253,7 +253,7 @@ class HiGameMonitorManager private constructor() {
         
         synchronized(userActions) {
             userActions.forEach { action ->
-                actionCounts[action.action] = actionCounts.getOrDefault(action.action, 0) + 1
+                actionCounts[action.action] = (actionCounts[action.action] ?: 0) + 1
             }
         }
         

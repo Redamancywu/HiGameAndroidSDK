@@ -14,10 +14,10 @@ import com.horizon.higame.core.ui.HiGameTheme
 import com.horizon.higame.ui.components.HiGameButton
 import com.horizon.higame.ui.theme.HiGameMaterialAdapter
 
-@Preview(name = "Login - CARD_MODAL", showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Preview(name = "Login - MODAL", showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun Preview_Login_CardModal() {
-    LoginPreviewScaffold(style = "CARD_MODAL")
+fun Preview_Login_Modal() {
+    LoginPreviewScaffold(style = "MODAL")
 }
 
 @Preview(name = "Login - FULLSCREEN", showBackground = true, backgroundColor = 0xFFFFFFFF)
@@ -32,17 +32,37 @@ fun Preview_Login_BottomSheet() {
     LoginPreviewScaffold(style = "BOTTOM_SHEET")
 }
 
+@Preview(name = "Login - EMBEDDED", showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun Preview_Login_Embedded() {
+    LoginPreviewScaffold(style = "EMBEDDED")
+}
+
 @Composable
 private fun LoginPreviewScaffold(style: String) {
     HiGameMaterialAdapter(theme = HiGameTheme()) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            Column {
-                Text("HiGame Login ($style)", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(12.dp))
-                HiGameButton(text = "微信登录") {}
-                Spacer(Modifier.height(8.dp))
-                HiGameButton(text = "游客登录") {}
+            val displayStyle = when (style) {
+                "FULLSCREEN" -> LoginDisplayStyle.FULLSCREEN
+                "MODAL" -> LoginDisplayStyle.MODAL
+                "BOTTOM_SHEET" -> LoginDisplayStyle.BOTTOM_SHEET
+                "EMBEDDED" -> LoginDisplayStyle.EMBEDDED
+                else -> LoginDisplayStyle.FULLSCREEN
             }
+            
+            val config = LoginConfig(
+                displayStyle = displayStyle,
+                uiConfig = LoginUIConfig(
+                    title = "HiGame登录",
+                    subtitle = "欢迎回来",
+                    enabledMethods = listOf("WECHAT", "QQ", "PHONE", "GUEST")
+                )
+            )
+            
+            LoginScreen(
+                config = config,
+                onDismiss = {}
+            )
         }
     }
 }

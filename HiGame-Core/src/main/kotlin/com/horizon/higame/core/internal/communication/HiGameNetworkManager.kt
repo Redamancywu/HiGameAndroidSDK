@@ -512,20 +512,38 @@ class HiGameNetworkManager private constructor() {
     private fun updateNetworkState() {
         val connectivityManager = this.connectivityManager ?: return
         
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        
-        val isConnected = networkCapabilities != null && 
-                         networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        val isConnected = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val activeNetwork = connectivityManager.activeNetwork
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+            networkCapabilities != null && 
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            activeNetworkInfo != null && activeNetworkInfo.isConnected
+        }
         
         _isNetworkAvailable.value = isConnected
         
-        val networkType = when {
-            networkCapabilities == null -> NetworkType.NONE
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
-            else -> NetworkType.OTHER
+        val networkType = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val activeNetwork = connectivityManager.activeNetwork
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+            when {
+                networkCapabilities == null -> NetworkType.NONE
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
+                else -> NetworkType.OTHER
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            when (activeNetworkInfo?.type) {
+                ConnectivityManager.TYPE_WIFI -> NetworkType.WIFI
+                ConnectivityManager.TYPE_MOBILE -> NetworkType.CELLULAR
+                ConnectivityManager.TYPE_ETHERNET -> NetworkType.ETHERNET
+                else -> if (activeNetworkInfo != null) NetworkType.OTHER else NetworkType.NONE
+            }
         }
         
         _networkType.value = networkType
@@ -579,7 +597,7 @@ class HiGameNetworkManager private constructor() {
             stat.lastRequestTime = System.currentTimeMillis()
             
             if (responseCode > 0) {
-                stat.responseCodes[responseCode] = stat.responseCodes.getOrDefault(responseCode, 0) + 1
+                stat.responseCodes[responseCode] = (stat.responseCodes[responseCode] ?: 0) + 1
             }
         }
     }
