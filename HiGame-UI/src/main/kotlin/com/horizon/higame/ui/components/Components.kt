@@ -38,26 +38,29 @@ fun HiGameInputField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     leading: (@Composable () -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
     isPassword: Boolean = false,
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Done,
     keyboardType: KeyboardType = KeyboardType.Text,
     onImeAction: (() -> Unit)? = null
 ) {
-    val visual = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
-    TextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
-        enabled = enabled,
-        placeholder = { if (placeholder != null) Text(placeholder) },
+        placeholder = placeholder?.let { { Text(it) } },
         leadingIcon = leading,
-        visualTransformation = visual,
+        trailingIcon = trailing,
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        enabled = enabled,
         keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
         keyboardActions = KeyboardActions(
             onDone = { onImeAction?.invoke() },
+            onNext = { onImeAction?.invoke() },
             onGo = { onImeAction?.invoke() },
-            onSearch = { onImeAction?.invoke() }
+            onSearch = { onImeAction?.invoke() },
+            onSend = { onImeAction?.invoke() }
         )
     )
 }
@@ -65,20 +68,17 @@ fun HiGameInputField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HiGameBottomSheet(
-    show: Boolean,
-    onDismissRequest: () -> Unit,
+    onDismiss: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    if (!show) return
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onDismissRequest, sheetState = state) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         content()
     }
 }
 
 @Composable
 fun HiGameDialog(
-    onDismissRequest: () -> Unit,
+    onDismiss: () -> Unit,
     title: String? = null,
     confirmText: String = "OK",
     onConfirm: (() -> Unit)? = null,
@@ -87,18 +87,20 @@ fun HiGameDialog(
     content: @Composable () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { if (title != null) Text(title) },
-        text = content,
+        onDismissRequest = onDismiss,
+        title = title?.let { { Text(it) } },
+        text = { content() },
         confirmButton = {
-            TextButton(onClick = { onConfirm?.invoke(); onDismissRequest() }) {
-                Text(confirmText)
+            if (onConfirm != null) {
+                TextButton(onClick = onConfirm) {
+                    Text(confirmText)
+                }
             }
         },
-        dismissButton = {
-            if (dismissText != null) {
-                TextButton(onClick = { onDismissButton?.invoke(); onDismissRequest() }) {
-                    Text(dismissText)
+        dismissButton = dismissText?.let {
+            {
+                TextButton(onClick = onDismissButton ?: onDismiss) {
+                    Text(it)
                 }
             }
         }

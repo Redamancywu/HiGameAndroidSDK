@@ -1,33 +1,131 @@
 package com.horizon.higame.ui.login
 
-import android.app.Activity
-import com.horizon.higame.ui.internal.HiGameTransparentActivity
-import com.horizon.higame.ui.screens.ScreenSpec
-import androidx.compose.runtime.Composable
+import android.content.Context
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.horizon.higame.ui.components.HiGameButton
+import com.horizon.higame.ui.components.HiGameLoadingView
 
-/**
- * 对外门面：以 Activity 方式展示登录 UI（Compose 无感知）
- */
 object HiGameLoginView {
-
-    @JvmStatic
-    fun show(activity: Activity, style: String = "CARD_MODAL") {
-        HiGameTransparentActivity.start(activity, ScreenSpec.Login { LoginScreen(style) })
+    private var currentConfig: LoginConfig? = null
+    
+    fun show(
+        context: Context,
+        config: LoginConfig = LoginConfig(),
+        callback: LoginCallback? = null
+    ) {
+        currentConfig = config.copy(callback = callback)
+        when (config.displayStyle) {
+            LoginDisplayStyle.FULLSCREEN -> {
+                // 全屏模式直接启动Activity
+            }
+            LoginDisplayStyle.MODAL,
+             LoginDisplayStyle.BOTTOM_SHEET,
+             LoginDisplayStyle.EMBEDDED -> {
+                 // TODO: 启动透明Activity显示登录界面
+             }
+         }
     }
+    
+    internal fun getConfig(): LoginConfig {
+        return currentConfig ?: LoginConfig()
+    }
+}
 
-    @Composable
-    private fun LoginScreen(style: String) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Text(text = "HiGame Login ($style)")
-            Spacer(Modifier.height(12.dp))
-            HiGameButton(text = "微信登录") {}
-            Spacer(Modifier.height(8.dp))
-            HiGameButton(text = "游客登录") {}
+@Composable
+fun LoginScreen(
+    config: LoginConfig = HiGameLoginView.getConfig(),
+    onDismiss: (() -> Unit)? = null
+) {
+    var currentMethod by remember { mutableStateOf(LoginMethod.USERNAME) }
+    var loginState by remember { mutableStateOf(LoginState.IDLE) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    val context = LocalContext.current
+    val onNavigateToRegister = {
+        // 根据当前登录显示模式跳转到对应的注册页面
+        com.horizon.higame.ui.register.HiGameRegisterView.show(
+            context = context,
+            config = config
+        )
+        // 关闭当前登录页面
+        onDismiss?.invoke()
+        Unit
+    }
+    
+    when (config.displayStyle) {
+        LoginDisplayStyle.FULLSCREEN -> {
+            FullscreenLoginContent(
+                config = config,
+                currentMethod = currentMethod,
+                onMethodChange = { currentMethod = it },
+                loginState = loginState,
+                onLoginStateChange = { loginState = it },
+                errorMessage = errorMessage,
+                onErrorChange = { errorMessage = it },
+                onDismiss = onDismiss,
+                onNavigateToRegister = onNavigateToRegister
+            )
+        }
+        LoginDisplayStyle.MODAL -> {
+            CardModalLoginContent(
+                config = config,
+                currentMethod = currentMethod,
+                onMethodChange = { currentMethod = it },
+                loginState = loginState,
+                onLoginStateChange = { loginState = it },
+                errorMessage = errorMessage,
+                onErrorChange = { errorMessage = it },
+                onDismiss = onDismiss,
+                onNavigateToRegister = onNavigateToRegister
+            )
+        }
+        LoginDisplayStyle.BOTTOM_SHEET -> {
+            BottomSheetLoginContent(
+                config = config,
+                currentMethod = currentMethod,
+                onMethodChange = { currentMethod = it },
+                loginState = loginState,
+                onLoginStateChange = { loginState = it },
+                errorMessage = errorMessage,
+                onErrorChange = { errorMessage = it },
+                onDismiss = onDismiss,
+                onNavigateToRegister = onNavigateToRegister
+            )
+        }
+        LoginDisplayStyle.EMBEDDED -> {
+            CenterDialogLoginContent(
+                config = config,
+                currentMethod = currentMethod,
+                onMethodChange = { currentMethod = it },
+                loginState = loginState,
+                onLoginStateChange = { loginState = it },
+                errorMessage = errorMessage,
+                onErrorChange = { errorMessage = it },
+                onDismiss = onDismiss,
+                onNavigateToRegister = onNavigateToRegister
+            )
         }
     }
 }
