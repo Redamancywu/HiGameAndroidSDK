@@ -75,6 +75,9 @@ dependencies {
     
     // Material Icons Extended - 包含完整的Material图标集
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
+    
+    // Coil - 图片加载库
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Activity Compose
     implementation(libs.androidx.activity.compose)

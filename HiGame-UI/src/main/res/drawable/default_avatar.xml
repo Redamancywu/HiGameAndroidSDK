@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background circle -->
+    <path
+        android:pathData="M60,60m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0"
+        android:fillColor="#4A90E2" />
+    
+    <!-- Head -->
+    <path
+        android:pathData="M60,45m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9" />
+    
+    <!-- Body -->
+    <path
+        android:pathData="M35,85a25,20 0,1 1,50 0a25,20 0,1 1,-50 0"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9" />
+    
+    <!-- Gaming controller -->
+    <group android:translateX="45" android:translateY="35">
+        <!-- Controller body -->
+        <path
+            android:pathData="M8,8h14a2,2 0,0 1,2 2v4a2,2 0,0 1,-2 2H8a2,2 0,0 1,-2 -2V10a2,2 0,0 1,2 -2z"
+            android:fillColor="#357ABD"
+            android:fillAlpha="0.8" />
+        
+        <!-- Buttons -->
+        <circle
+            android:fillColor="#FFFFFF"
+            cx="12" cy="10" r="1" />
+        <circle
+            android:fillColor="#FFFFFF"
+            cx="18" cy="10" r="1" />
+        
+        <!-- D-pad -->
+        <path
+            android:pathData="M6,11h2a1,1 0,0 1,1 1v2a1,1 0,0 1,-1 1H6a1,1 0,0 1,-1 -1V12a1,1 0,0 1,1 -1z"
+            android:fillColor="#357ABD"
+            android:fillAlpha="0.8" />
+        <path
+            android:pathData="M22,11h2a1,1 0,0 1,1 1v2a1,1 0,0 1,-1 1H22a1,1 0,0 1,-1 -1V12a1,1 0,0 1,1 -1z"
+            android:fillColor="#357ABD"
+            android:fillAlpha="0.8" />
+    </group>
+</vector>
