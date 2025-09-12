@@ -25,15 +25,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.layout.systemBarsPadding
+import coil.compose.AsyncImage
 import com.horizon.higame.ui.components.HiGameBottomSheet
 import com.horizon.higame.ui.components.HiGameDialog
 import com.horizon.higame.ui.components.HiGameLoadingView
@@ -60,59 +64,92 @@ fun FullscreenLoginContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                if (!config.uiConfig.backgroundImageUrl.isNullOrEmpty()) {
-                    Color.Transparent
-                } else {
-                    Color(android.graphics.Color.parseColor(config.uiConfig.backgroundColor))
-                }
-            )
+            .systemBarsPadding()
     ) {
-        // 背景图片
-        if (!config.uiConfig.backgroundImageUrl.isNullOrEmpty()) {
-            // TODO: 加载背景图片
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0x80000000)) // 半透明遮罩
-            )
-        }
-        
-        // 关闭按钮
-        if (onDismiss != null) {
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "关闭",
-                    tint = Color(android.graphics.Color.parseColor(config.uiConfig.textColor))
+        // 通用背景渲染（COLOR/GRADIENT/IMAGE）
+        LoginBackground(ui = config.uiConfig)
+         
+         // 关闭按钮
+         if (onDismiss != null) {
+             IconButton(
+                 onClick = onDismiss,
+                 modifier = Modifier
+                     .align(Alignment.TopEnd)
+                     .padding(16.dp)
+             ) {
+                 Icon(
+                     imageVector = Icons.Default.Close,
+                     contentDescription = "关闭",
+                     tint = Color(android.graphics.Color.parseColor(config.uiConfig.textColor))
+                 )
+             }
+         }
+         
+         // 主要内容
+         Column(
+             modifier = Modifier
+                 .fillMaxSize()
+                 .padding(24.dp)
+                 .verticalScroll(rememberScrollState()),
+             horizontalAlignment = Alignment.CenterHorizontally,
+             verticalArrangement = Arrangement.Center
+         ) {
+             LoginMainContent(
+                 config = config,
+                 currentMethod = currentMethod,
+                 onMethodChange = onMethodChange,
+                 loginState = loginState,
+                 onLoginStateChange = onLoginStateChange,
+                 errorMessage = errorMessage,
+                 onErrorChange = onErrorChange,
+                 isFullscreen = true,
+                 onNavigateToRegister = onNavigateToRegister
+             )
+         }
+     }
+ }
+
+@Composable
+private fun LoginBackground(ui: LoginUIConfig) {
+    when (ui.backgroundType.uppercase()) {
+        "IMAGE" -> {
+            // 背景图（使用 Coil AsyncImage）
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = ui.backgroundImageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                // 覆盖一层轻微遮罩，保证内容可读性
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
                 )
             }
         }
-        
-        // 主要内容
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            LoginMainContent(
-                config = config,
-                currentMethod = currentMethod,
-                onMethodChange = onMethodChange,
-                loginState = loginState,
-                onLoginStateChange = onLoginStateChange,
-                errorMessage = errorMessage,
-                onErrorChange = onErrorChange,
-                isFullscreen = true,
-                onNavigateToRegister = onNavigateToRegister
+        "GRADIENT" -> {
+            val colors = (ui.gradientColors ?: listOf(ui.primaryColor, ui.secondaryColor))
+                .mapNotNull { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrNull() }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = if (colors.isNotEmpty()) colors else listOf(
+                                Color(android.graphics.Color.parseColor(ui.primaryColor)),
+                                Color(android.graphics.Color.parseColor(ui.secondaryColor))
+                            )
+                        )
+                    )
+            )
+        }
+        else -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(android.graphics.Color.parseColor(ui.backgroundColor)))
             )
         }
     }
@@ -144,6 +181,7 @@ fun CardModalLoginContent(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .wrapContentHeight()
+                .offset(y = (-12).dp)
                 .clickable(enabled = false) { }, // 阻止点击穿透
             shape = RoundedCornerShape(config.uiConfig.cornerRadius.dp),
             colors = CardDefaults.cardColors(
@@ -565,7 +603,9 @@ private fun OtherLoginMethods(
             text = "其他登录方式",
             fontSize = 14.sp,
             color = Color.Gray,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
             textAlign = TextAlign.Center
         )
         
@@ -638,8 +678,11 @@ private fun LoginOptionButtons(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.Gray.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center
-                )
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                 )
                 
                 // 单行显示所有按钮
                 Row(
@@ -659,7 +702,8 @@ private fun LoginOptionButtons(
                             onClick = { onMethodChange(method) },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(48.dp),
+                                .height(config.buttonHeight.dp)
+                                .heightIn(min = 48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = backgroundColor,
@@ -668,11 +712,11 @@ private fun LoginOptionButtons(
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 2.dp,
                                 pressedElevation = 4.dp
-                            )
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = icon,
@@ -680,11 +724,14 @@ private fun LoginOptionButtons(
                                     modifier = Modifier.size(18.dp),
                                     tint = Color.White
                                 )
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = label,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.White
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }

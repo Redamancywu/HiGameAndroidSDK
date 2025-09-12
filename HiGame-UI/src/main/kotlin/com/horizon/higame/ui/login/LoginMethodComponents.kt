@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.horizon.higame.ui.components.HiGameButton
 import com.horizon.higame.ui.components.HiGameInputField
 import com.horizon.higame.ui.components.HiGameLoadingView
+import com.horizon.higame.ui.components.ButtonStyle
 import kotlinx.coroutines.delay
 
 /**
@@ -177,9 +179,12 @@ fun PhoneLoginForm(
                         tint = Color.Gray
                     )
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
             )
             
+            val sendEnabled = countdown == 0 && phone.isNotEmpty()
             Button(
                 onClick = {
                     if (validatePhone(phone, validationConfig.phoneRule)) {
@@ -189,10 +194,27 @@ fun PhoneLoginForm(
                         phoneError = validationConfig.phoneRule.errorMessage
                     }
                 },
-                enabled = countdown == 0 && phone.isNotEmpty(),
-                modifier = Modifier.height(56.dp),
+                enabled = sendEnabled,
+                modifier = Modifier
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(config.cornerRadius.dp))
+                    .background(
+                        brush = if (sendEnabled)
+                            Brush.horizontalGradient(listOf(Color(0xFF3B82F6), Color(0xFF2563EB)))
+                        else
+                            Brush.horizontalGradient(listOf(Color(0xFFE5E7EB), Color(0xFFD1D5DB))),
+                        shape = RoundedCornerShape(config.cornerRadius.dp)
+                    ),
+                shape = RoundedCornerShape(config.cornerRadius.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 3.dp,
+                    pressedElevation = 6.dp
+                ),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(android.graphics.Color.parseColor(config.primaryColor))
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Transparent,
+                    disabledContentColor = Color(0xFF9CA3AF)
                 )
             ) {
                 Text(
@@ -228,7 +250,17 @@ fun PhoneLoginForm(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(config.buttonHeight.dp)
+                .height(config.buttonHeight.dp),
+            style = when (config.buttonStyleEnum) {
+                ButtonStyleConfig.FILLED -> ButtonStyle.FILLED
+                ButtonStyleConfig.OUTLINED -> ButtonStyle.OUTLINED
+                ButtonStyleConfig.TONAL -> ButtonStyle.TONAL
+            },
+            containerColor = Color(android.graphics.Color.parseColor(config.primaryColor)),
+            contentColor = config.buttonTextColor?.let { Color(android.graphics.Color.parseColor(it)) },
+            borderColor = config.buttonBorderColor?.let { Color(android.graphics.Color.parseColor(it)) },
+            cornerRadius = config.cornerRadius.dp,
+            elevation = config.buttonElevation.dp
         )
     }
 }
@@ -495,7 +527,17 @@ fun UsernameLoginForm(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(config.buttonHeight.dp)
+                .height(config.buttonHeight.dp),
+            style = when (config.buttonStyleEnum) {
+                ButtonStyleConfig.FILLED -> ButtonStyle.FILLED
+                ButtonStyleConfig.OUTLINED -> ButtonStyle.OUTLINED
+                ButtonStyleConfig.TONAL -> ButtonStyle.TONAL
+            },
+            containerColor = Color(android.graphics.Color.parseColor(config.primaryColor)),
+            contentColor = config.buttonTextColor?.let { Color(android.graphics.Color.parseColor(it)) },
+            borderColor = config.buttonBorderColor?.let { Color(android.graphics.Color.parseColor(it)) },
+            cornerRadius = config.cornerRadius.dp,
+            elevation = config.buttonElevation.dp
         )
     }
 }
